@@ -1,6 +1,6 @@
 # networks
 
-Implementation of Vill_Net class for visualizing networks from [Banerjee et al.](https://web.stanford.edu/~arungc/BCDJ) The class has the following methods -
+Implementation of Vill_Net class for visualizing social networks from the research paper by [Banerjee et al.](https://web.stanford.edu/~arungc/BCDJ) The class has the following methods -
 
 1. init 
 2. mf_takeup - adding whether a particular node takes up microfinance or not based on its eigen vector centrality 
