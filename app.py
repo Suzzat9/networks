@@ -26,9 +26,13 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
         html.H2(children='Visualizing take up of microfinance across a village in Karnataka, India'),
 
         html.Div(children='''
-            More explanation
-        '''), 
-    ]), 
+            Select a village number from the drop down menu to observe the diffusion of information
+                across each time period. The households in red are estimated to take up microfinance
+                in that period.
+        '''),
+        html.Div(children='''
+        Data from: A. Banerjee et al., Science 341, 1236498 (2013). DOI: 10.1126/science.1236498'''),
+        ]), 
 
     html.Div([
     dcc.Dropdown(
