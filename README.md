@@ -1,11 +1,7 @@
-# networks
+# Networks- A dash application for visualizing information diffusion
 
-Implementation of Vill_Net class for visualizing social networks from the research paper by [Banerjee et al.](https://web.stanford.edu/~arungc/BCDJ) The class has the following methods -
+This application visualizes the spread of information across a village at different points in time. The data is from the experiment conducted by [Banerjee et al.](https://web.stanford.edu/~arungc/BCDJ). Multiple individuals in each village were informed of a microfinance product that was being offered by a non-profit organization. The researchers then studied how information about this product spread across time and the number of households that took up the product in each time period.
 
-1. init 
-2. mf_takeup - adding whether a particular node takes up microfinance or not based on its eigen vector centrality 
-3. plot_graph - plotting the network marking the nodes that have taken up microfinance 
-4. plot_multiple - plotting microfinance participation in the network across time
+## To run the app
 
-To implement-
-1. app.py file to run this as an application
+1. Clone the repository

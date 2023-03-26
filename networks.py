@@ -1,43 +1,42 @@
-import igraph
 from igraph import Graph
 from numpy import genfromtxt
-import matplotlib.pyplot as plt
 import math
 import pandas as pd
+import plotly.graph_objects as go
 
-file = 'data/adj_allVillageRelationships_HH_vilno_2.csv'
 
 leader_data = pd.read_stata("data/panel.dta", index_col="village")
 
 class Vill_Net:
     '''
-    Class for networks of villages. 
+    Class visualizing the social network of a village. 
 
-    Attributes -
-    ._g - igraph object of the network
-    ._p_rate - percent of households enrolled
+    --Attributes--
+    ._g : igraph object of the network
+    ._p_rate : percent of households enrolled
     in microfinance
-    ._num_nodes - number of households
-    ._evcent_round - list of eigen_vector 
+    ._num_nodes : number of households
+    ._evcent_round : list of eigen_vector 
     centrality values (used in mf_takeup)
 
-    Methods-
+    --Methods--
     mf_takeup: Adding take_up attribute (0 or 1)
-    to a household
-    plot_graph: plot the network showing the households
+    to each household (node) in the village
+    plot_graph: plot the village network showing the households
     currently participating in microfinance
+    gen_plots: plot the village network for all time periods and
+    output a list of plots
     '''
 
-    def __init__(self, adjmat, villno):
+    def __init__(self, adjmat: str, villno: int) -> None:
 
         '''
-
         Initiliazation of the Vill_Net class
-
         Inputs:
-        adjmat (str): File path of the adjacency matrix of the village (csv)
+        adjmat: File path of the adjacency matrix of the village (csv)
         to read in
-        villno: Village number (int)
+        villno: Village number (int) (currently only have data for villages 1, 2, 3)
+
         '''
 
         data = genfromtxt(adjmat, delimiter=',', skip_header = 0)
@@ -52,23 +51,20 @@ class Vill_Net:
         # For visualization
         layout = self._g.layout('kk')
         self.visual_style = {}
-        self.visual_style["vertex_size"] = 4
-        self.visual_style["edge_width"] = 0.1
-        self.visual_style["edge_arrow_width"] = 0.1
         self.visual_style["layout"] = layout
         
 
-
-    def mf_takeup(self, time_period):
+    def mf_takeup(self, time_period: int):
         '''
-        Add a take_up attribute to every node in the village,
-        where for a specific percent of take up X in time 
+        Add a take_up attribute to every node in the village as follows -
+
+        For a specific percent of take up X in time 
         period Y, X * total_number of nodes take up microfinance
         in period Y. Take up is according to the following process-
         Assuming nodes with higher eigen vector centrality are
         more likely to hear about microfinance, rank nodes according
-        to EV centrality and choose the highest X * total_nodes 
-        for take_up
+        to EV centrality and choose the highest X * total_nodes. These
+        nodes will get a take_up value = 1.
 
         Inputs-
         time_period - (int)- time period to specify take-up
@@ -91,51 +87,79 @@ class Vill_Net:
         color_dict = {1: "red", 0: "blue"}
         self.visual_style["vertex_color"] = [color_dict[take_up] for take_up in self._g.vs["take_up"]]
     
-    def plot_graph(self, show = True):
+    def plot_graph(self, title: str):
         '''
         Plot the network graph in its current
-        state, green nodes are ones that have 
-        taken up MF
+        state, red nodes are ones that have 
+        taken up microfinance
+
+        title: title of the graph
         '''
 
-        fig, ax = plt.subplots()
-        plt.axis('off')
-        igraph.plot(self._g, **self.visual_style, target=ax)
-        if show:
-            plt.show()
+        labels=list(self._g.vs.indices)
+        E=[e.tuple for e in self._g.es]
+        layt=self._g.layout('kk')
+
+        # Build layout
+        Xn=[layt[k][0] for k in range(self._num_nodes)]
+        Yn=[layt[k][1] for k in range(self._num_nodes)]
+        Xe=[]
+        Ye=[]
+        for e in E:
+            Xe+=[layt[e[0]][0],layt[e[1]][0], None]
+            Ye+=[layt[e[0]][1],layt[e[1]][1], None]
+        
+        trace1=go.Scatter(x=Xe,
+               y=Ye,
+               mode='lines',
+               line= dict(color='rgb(210,210,210)', width=1),
+               hoverinfo='none'
+               )
+        trace2=go.Scatter(x=Xn,
+               y=Yn,
+               mode='markers',
+               name='ntw',
+               marker=dict(symbol='circle-dot',
+                                        size=5,
+                                        color=self.visual_style["vertex_color"],
+                                        line=dict(color='rgb(50,50,50)', width=0.5)
+                                        ),
+               text=labels,
+               hoverinfo='text'
+                )
+        axis=dict(showline=False, # hide axis line, grid, ticklabels and  title
+          zeroline=False,
+          showgrid=False,
+          showticklabels=False,
+          title='')
+        # Build layout
+        layout=go.Layout(title=title,
+        font= dict(size=10),
+        showlegend=False,
+        autosize=False,
+        width=300,height=300,margin=dict(b=20,l=5,r=5,t=40),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        hovermode='closest',
+        )
+        data=[trace1, trace2]
+        fig=go.Figure(data=data, layout=layout)
+
+        return fig
     
-    def plot_multiple(self):
+    def gen_plots(self):
         '''
-        Plot the microfinance take up of 
-        a village for all time periods
+        Plot the network and output a list of graphs for all time
+        periods
         '''
 
-        self.visual_style["vertex_size"] = 2
-        self.visual_style["edge_width"] = 0.05
-        self.visual_style["edge_arrow_width"] = 0.05
-
-        rows = math.ceil(len(self._p_rate)/3)
+        plots = []
 
         for i in range(len(self._p_rate)):
-
             self.mf_takeup(i)
-            if i <= 2:
-                j = 0
-                k = i
-            elif i > 2 and i <= 5:
-                j = 1
-                k = i - 3
-            elif i > 5 and i <= 8:
-                j = 2
-                k = i - 6
-            else:
-                j = 3
-                k = i - 9
-            plt.figure(0)
-            ax = plt.subplot2grid((rows, 3), (j, k))
-            plt.axis('off')
-            plt.title(str('time-' + str(i)))
-            igraph.plot(self._g, **self.visual_style, target=ax)
+            fig = self.plot_graph(title=str("time period-" + str(i)))
+            plots.append(fig)
         
-        plt.show()
+        return plots
+
             
