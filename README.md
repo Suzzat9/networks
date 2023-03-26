@@ -4,4 +4,11 @@ This application visualizes the spread of information across a village at differ
 
 ## To run the app
 
-1. Clone the repository
+1. Clone the repository, run `cd networks`
+
+2. In a terminal, run the `install.sh` file, this will create a virtual environment and install the required packaged in this environment. 
+
+3. Activate the virtual environment. For MacOS: `source env/bin/activate`
+
+4. Run the app `python3 app.py`
+
